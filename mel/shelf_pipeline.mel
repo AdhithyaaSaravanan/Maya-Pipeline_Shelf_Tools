@@ -1,0 +1,144 @@
+global proc shelf_pipeline () {
+    global string $gBuffStr;
+    global string $gBuffStr0;
+    global string $gBuffStr1;
+
+
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Set project in a given directory and automatically create a v001 scene file" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Set_Project" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "C:/Users/sadhi/OneDrive/Documents/maya/2022/prefs/icons/set_project.png" 
+        -image1 "C:/Users/sadhi/OneDrive/Documents/maya/2022/prefs/icons/set_project.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "\nimport maya.cmds as cmds\nimport os\n\n# Function to open and set project directory\ndef browse_directory(*args):\n    directory_path = cmds.fileDialog2(dialogStyle=2, fileMode=3)\n    if directory_path:\n        cmds.textField(directory_field, edit=True, text=directory_path[0])\n\n# Function to set project\ndef set_project(selected_directory, folder_name):\n    \n    set_project_dir = os.path.join(selected_directory, folder_name)\n       \n    if not os.path.exists(set_project_dir):\n        os.mkdir(set_project_dir)\n    \n    folders_list = [\"scenes\", \"assets\", \"textures\", \"ref_images\", \"scripts\"]\n    for folder in folders_list:\n        folder_dir = os.path.join(set_project_dir, folder)\n        if not os.path.exists(folder_dir):\n            os.mkdir(folder_dir)\n            \n    scenes_dir = os.path.join(set_project_dir, \"scenes\")\n    \n    file_name = folder_name + \"_v001.ma\"\n    save_path = os.path.join(scenes_dir, file_name)\n    cmds.file(rn=save_path)\n    cmds.file(s=True, f=True,typ=\"mayaAscii\")\n    \n\n# Function to create project folder\ndef create_project_folder(*args):\n    selected_directory = cmds.textField(directory_field, query=True, text=True)\n    folder_name = cmds.textField(folder_field, query=True, text=True)\n    \n    if selected_directory and folder_name:\n        \n        set_project(selected_directory, folder_name)\n        \n        # Delete window after project folder is created\n        if cmds.window(window_name, exists=True):\n            cmds.deleteUI(window_name)\n        \n    else:\n        cmds.confirmDialog(title=\"Error\", message=\"Please select a directory and enter a project name.\", button=[\"OK\"], defaultButton=\"OK\")\n        \n\n# Create a window\nwindow_name = \"myWindow\"\n\n# Delete window if it already exists\nif cmds.window(window_name, exists=True):\n    cmds.deleteUI(window_name)\n\ncmds.window(window_name, title=\"Choose Directory To Create Project Folder\", h=500, w=300)\n\n# Column layout for UI \ncolumn_layout = cmds.columnLayout(adjustableColumn=True, rowSpacing=10, columnAttach=[\"both\", 5])\n\n# Row layout for browsing directory \nrow_layout1 = cmds.rowLayout(numberOfColumns=3, columnWidth3=[100, 400, 100], columnAlign3=[\"right\", \"left\", \"left\"])\ncmds.text(label=\"Select Directory:\")\ndirectory_field = cmds.textField(editable=True, text=\"\", width=400) \nbrowse_button = cmds.button(label=\"Browse\", width=100, command=browse_directory)\ncmds.setParent(\"..\")\n\n# Row layout for folder name\nrow_layout2 = cmds.rowLayout(numberOfColumns=2, columnWidth2=[100, 400], columnAlign2=[\"right\", \"left\"])\ncmds.text(label=\"Folder Name:\")\nfolder_field = cmds.textField(editable=True, text=\"\", width=400) \ncmds.setParent(\"..\")\n\n# Button to create project folder\nset_project_button = cmds.button(label=\"Set Project\", width=500, command=create_project_folder)\n\n# Show window\ncmds.showWindow(window_name)" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Versions up the current project file in the current working directory" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Version Up" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "C:/Users/sadhi/OneDrive/Documents/maya/2022/prefs/icons/version_up.png" 
+        -image1 "C:/Users/sadhi/OneDrive/Documents/maya/2022/prefs/icons/version_up.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "\nfile_path = cmds.file(q=True, sn=True)\n\nfile_name = os.path.basename(file_path)\nname_split = file_name.split('.')\n\nassert len(name_split) == 2\nversion_no = name_split[0][-3:]\n\nassert version_no.isdigit()\n\nnext_version_no = int(version_no) + 1\nformatted_version_no = \"v{:03d}\".format(next_version_no)\n\n# Remove version no and file extension to add new version no\nnew_file_name = file_name[:-7] + formatted_version_no + \".ma\"\nnew_save_path = os.path.abspath(os.path.join(os.path.dirname(file_path), new_file_name))\n\ncmds.file(rn=new_save_path)\ncmds.file(s=True, f=True,typ=\"mayaAscii\")\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "View all versions of the current project and toggle between them" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Selected_Version" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "C:/Users/sadhi/OneDrive/Documents/maya/2022/prefs/icons/version_select.png" 
+        -image1 "C:/Users/sadhi/OneDrive/Documents/maya/2022/prefs/icons/version_select.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "import maya.cmds as cmds\nimport os\n\nfile_path = cmds.file(q=True, sn=True)\ndirectory = os.path.dirname(file_path)\nfiles = os.listdir(directory)\n\nmenu_dropdown = []\nall_versions = []\nfor file_obj in files:\n    \n    # Check is file is a .ma file.\n    # This check shouldn't be necessary as manual file creation \n    # shouldn't happen in these directories, but just to be safe.\n    if file_obj.endswith('.ma'):\n        \n        name_split = file_obj.split('.')\n        assert len(name_split) == 2\n        \n        file_name = name_split[0]\n        menu_dropdown.append(file_name[-3:])\n        all_versions.append(file_name)\n\n\ndef load_selected_version(*args):\n    # Get selected version\n    selected_version = cmds.optionMenu(\"myDropdownMenu\", query=True, value=True)\n    \n    selected_file = None\n    for file_name in all_versions:\n        if selected_version in file_name:\n            selected_file = file_name\n            \n    assert selected_file is not None\n    file_open_path = os.path.abspath((os.path.join(directory, selected_file + \".ma\")))\n\n    cmds.file(new=True, force=True) \n    cmds.file(file_open_path, open=True)\n\n\n# Delete window if it already exists\nif cmds.window(\"myWindow\", exists=True):\n    cmds.deleteUI(\"myWindow\", window=True)\n\nmainWindow = cmds.window(\"myWindow\", title=\"Select Version\")\nmainLayout = cmds.columnLayout(adjustableColumn=True)\n\n# Create dropdown menu\ndropdown_menu = cmds.optionMenu(\"myDropdownMenu\", label=\"Versions Available\", parent=mainLayout)\n\n# Append menu items\nfor version in menu_dropdown:\n    cmds.menuItem(label=version, parent=dropdown_menu)\n\n# Set current selected value to the highest version\ncmds.optionMenu(dropdown_menu, edit=True, select=int(menu_dropdown[-1]))\n\n# Button to load file\nbutton = cmds.button(label=\"Load File\", parent=mainLayout, command=load_selected_version)\n\n# Show the window\ncmds.showWindow(mainWindow)\n\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+    shelfButton
+        -enableCommandRepeat 1
+        -flexibleWidthType 3
+        -flexibleWidthValue 32
+        -enable 1
+        -width 35
+        -height 34
+        -manage 1
+        -visible 1
+        -preventOverride 0
+        -annotation "Projects" 
+        -enableBackground 0
+        -backgroundColor 0 0 0 
+        -highlightColor 0.321569 0.521569 0.65098 
+        -align "center" 
+        -label "Projects" 
+        -labelOffset 0
+        -rotation 0
+        -flipX 0
+        -flipY 0
+        -useAlpha 1
+        -font "plainLabelFont" 
+        -overlayLabelColor 0.8 0.8 0.8 
+        -overlayLabelBackColor 0 0 0 0.5 
+        -image "C:/Users/sadhi/OneDrive/Documents/maya/2022/prefs/icons/project_select.png" 
+        -image1 "C:/Users/sadhi/OneDrive/Documents/maya/2022/prefs/icons/project_select.png" 
+        -style "iconOnly" 
+        -marginWidth 1
+        -marginHeight 1
+        -command "\nprojects_file_path = r'C:\\Users\\sadhi\\Desktop\\sandbox\\maya_pipe_test\\projects' \n\n\ndef load_project(*args):\n    \n    selected_project = cmds.optionMenu(dropdown_menu, query=True, value=True)\n    selected_file = cmds.optionMenu(dropdown_menu_2, query=True, value=True)\n    \n    selected_project_path = os.path.join(projects_file_path, selected_project)\n    \n    selected_file_path = os.path.join(selected_project_path, selected_file)\n    \n    scenes_path = os.path.join(selected_file_path, 'scenes')\n    scenes_list = os.listdir(scenes_path)\n       \n    highest_version_file = scenes_list[-1]\n    file_path_to_load = os.path.join(scenes_path, highest_version_file)\n    \n    cmds.file(new=True, force=True) \n    cmds.file(file_path_to_load, open=True)\n\n\ndef change_file_path(*args):\n    \n    selected_project = cmds.optionMenu(\"myDropdownMenu\", query=True, value=True)\n    \n    cmds.optionMenu(dropdown_menu_2, e=True, dai=True)\n    files_path = os.path.join(projects_file_path, selected_project)\n    \n    for project in os.listdir(files_path):\n        cmds.menuItem(label=project, parent=dropdown_menu_2)\n\n\n# Delete window if it already exists\nif cmds.window(\"myWindow\", exists=True):\n    cmds.deleteUI(\"myWindow\", window=True)\n\n# Create the main window\nmainWindow = cmds.window(\"myWindow\", title=\"Select Project\")\nmainLayout = cmds.columnLayout(adjustableColumn=True)\n\n# Both dropdown menus\ndropdown_menu = cmds.optionMenu(\"myDropdownMenu\", label=\"Projects Available\", parent=mainLayout, cc=change_file_path)\ndropdown_menu_2 = cmds.optionMenu(\"myDropdownMenu_2\", label=\"Choose File\", parent=mainLayout)\n\n# Append menu items of dropdown menu 1\nfor project in os.listdir(projects_file_path):\n    cmds.menuItem(label=project, parent=dropdown_menu)\n    \n# Set initial options for dropdown menu 2\nselected_project = cmds.optionMenu(\"myDropdownMenu\", query=True, value=True)\n    \nfiles_path = os.path.join(projects_file_path, selected_project)\nfor project in os.listdir(files_path):\n    cmds.menuItem(label=project, parent=dropdown_menu_2)\n\n# Button to load project\nbutton = cmds.button(label=\"Load Project\", parent=mainLayout, command=load_project)\n\n# Show the window\ncmds.showWindow(mainWindow)\n\n" 
+        -sourceType "python" 
+        -commandRepeatable 1
+        -flat 1
+    ;
+
+} 
